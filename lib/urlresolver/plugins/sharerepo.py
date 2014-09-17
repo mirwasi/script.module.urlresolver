@@ -63,23 +63,12 @@ class SharerepoResolver(Plugin, UrlResolver, PluginSettings):
             # get the video page
             html = self.net.http_POST(web_url, data, headers=headers).content
             
-            r = re.search(r'type="submit"\s*id="btn_download"',html)
-            if not r:
-                raise Exception("Video Not Found")
-            
-            data = {}
-            r = re.findall(r'type="hidden" name="(.+?)"\s* value="?(.+?)">', html)
-            for name, value in r: data[name] = value
-            data.update({'referer':web_url})
-            data.update({'method_free':'Free Download'})
-            data.update({'btn_download':'download'})
-            #print data
-
-            # click download button
-            # using standard urlopen because t0mm0's wrappers don't seem to return until content download is complete
-            request = urllib2.Request(web_url,urllib.urlencode(data),headers=headers)            
-            response = urllib2.urlopen(request)
-            return response.geturl()
+            r = re.search(r'var lnk1 = \'',html)
+			if not r:
+				raise Exception("Video Not Found")
+			
+			r = re.findall(r'var lnk1 = \'(.+?)\'', html)
+			return r[0]
         except urllib2.URLError, e:
             common.addon.log_error(self.name + ': got http error %d fetching %s' %
                                    (e.code, web_url))
